@@ -1,0 +1,34 @@
+<script>
+  function foo() {
+      document.getElementById("jojo").innerText = "JO JO !";
+  }
+function dio() {
+      document.getElementById("jojo").innerText = "DIO !";
+  }
+
+function replacer() {
+    document.getElementById("jojo").outerHTML = "<b id=jojo>BOLD of you JO JO!</b>";
+  }
+
+  function classStuff() {
+      const els = document.querySelectorAll(".clickable")
+      els.forEach(el => {
+          el.innerHTML = "Change!"
+      });
+  }
+</script>
+
+<b>Bar reached</b>
+<button onclick="classStuff()">Magic Button</button>
+<br>
+<span onmouseover=dio() id="myspan">What is a span? </span>
+<br>
+<button onclick=foo()>This a button </button>
+<hr>
+<h1>More stuff</h1>
+<footer onmouseover="replacer()" id="jojo" >this is a footer</footer>
+<footer onmouseover="replacer()" id="jojo" >this is a footer</footer>
+<br>
+<footer class="clickable">magic clickable </footer>
+<footer class="clickable">magic clickable </footer>
+<footer class="clickable">magic clickable </footer>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bank Account</title>
+</head>
+<body>
+    <dl>
+        <dt>Account number:</dt>
+        <dd>{{.Id}}</dd>
+
+        <dt>Balance:</dt>
+        <dd>${{.Balance}} USD</dd>
+    </dl>
+
+    <p>The Links below are Hypermedia control!</p>
+    <p>On the Bankaccoun data above, the following behaviour is provided</p>
+    <p>This makes the API truely RESTful</p>
+
+
+    <ul>
+        <li><a href="/account/{{.Id}}/deposits">deposit</a></li>
+        <li><a href="/account/{{.Id}}/withdrawal">withdrawals</a></li>
+    </ul>
+</body>
+</html>
