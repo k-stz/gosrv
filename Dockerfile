@@ -15,6 +15,7 @@ RUN go mod download
 COPY main.go ./
 COPY static ./static
 COPY templates ./templates
+COPY nfs ./nfs
 
 # Build static binary
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
@@ -36,6 +37,8 @@ COPY --from=builder /main /main
 # Copy static assets and templates
 COPY --from=builder /app/static /app/static
 COPY --from=builder /app/templates /app/templates
+COPY --from=builder /app/nfs /app/nfs
+
 
 # Non-root user
 USER 1001
