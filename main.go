@@ -5,9 +5,12 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
+	// not needed with golang 1.25+
+	// _ "go.uber.org/automaxprocs"
 )
 
 func httpbin(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +126,14 @@ func proc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<b>gomaxprocs = %s</b><hr><b>numCPU =  %s</b>", gomaxprocs, numCPU)
 }
 
+func startupMessages() {
+	pid := os.Getpid()
+	fmt.Printf("pid= %d\n", pid)
+}
+
 func main() {
+	startupMessages()
+
 	mux := http.NewServeMux()
 
 	// serve statis files from ./static !

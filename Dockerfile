@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 
 # ========= STAGE 1: Build =========
-FROM golang:1.24-alpine AS builder
+# TODO: with golang 1.25 gomaxprocs default value does honor quota set!!!
+FROM golang:1.25-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
 
@@ -9,6 +10,7 @@ WORKDIR /app
 
 # Copy go.mod + go.sum (you said go.sum exists)
 COPY go.mod ./
+COPY go.sum ./
 RUN go mod download
 
 # Copy source
