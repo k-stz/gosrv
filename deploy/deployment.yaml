@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: gosrv
+  labels:
+    app: gosrv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: gosrv
+  template:
+    metadata:
+      labels:
+        deployment: gosrv
+    spec:
+      containers:
+        - name: gosrv
+          image: 'image-registry.openshift-image-registry.svc:5000/foobar/gosrv:latest'
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            # TESTED: Setting limit to 2, will set gomaxprocs to 2 on golang 1.25+
+            limits:
+              cpu: '2'
+              memory: 20Mi
+            requests:
+              cpu: '2'
+  revisionHistoryLimit: 2
