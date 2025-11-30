@@ -1,0 +1,26 @@
+
+# WORKS
+# Use to start openshift build. Which will run the Dockerfile build in a pod, with the
+# repo code checked out.
+# the resulting image will be pushed to the openshfit internal registry via the imagestreamtag
+# concept
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: gosrv
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'gosrv:latest'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/k-stz/gosrv.git'
+      ref: main
+    contextDir: /
