@@ -126,6 +126,24 @@ func proc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<b>gomaxprocs = %s</b><hr><b>numCPU =  %s</b>", gomaxprocs, numCPU)
 }
 
+func loadtest(w http.ResponseWriter, r *http.Request) {
+	// omg, running this method will spawn a leaky goroutine on each invokation
+	// running at 100%
+	go func() {
+		for {
+			// endless loop burning CPU
+		}
+	}()
+
+	// program immediately continues from this go
+	numGoroutines := 1
+	fmt.Fprintf(w, "<b>Load started: %d goroutines at 100%% CPU</b><br>", numGoroutines)
+
+	gomaxprocs := strconv.Itoa(runtime.GOMAXPROCS(0))
+	numCPU := strconv.Itoa(runtime.NumCPU())
+	fmt.Fprintf(w, "<b>Finished executing = %s</b><hr><b>numCPU =  %s</b>", gomaxprocs, numCPU)
+}
+
 func startupMessages() {
 	pid := os.Getpid()
 	fmt.Printf("pid= %d\n", pid)
@@ -144,6 +162,8 @@ func main() {
 	//nfs := http.FileServer(http.Dir("./nfs/"))
 	mux.Handle("/nfs/", http.StripPrefix("/nfs/", http.FileServer(http.Dir("./nfs"))))
 	fmt.Println("mount nfs at ./nfs, served at /nfs")
+
+	mux.HandleFunc("/load", loadtest)
 
 	mux.HandleFunc("/httpbin", httpbin)
 	mux.HandleFunc("/foo", foo)
