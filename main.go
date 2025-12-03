@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"sync"
 	// not needed with golang 1.25+
 	// _ "go.uber.org/automaxprocs"
 )
@@ -126,6 +127,15 @@ func proc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<b>gomaxprocs = %s</b><hr><b>numCPU =  %s</b>", gomaxprocs, numCPU)
 }
 
+// This is great add logic like:
+/*
+- tracking total goroutines
+- tracking full load cpus
+- add the ability to increment and decrement the number of endlessly running goroutine!
+  - this can be implemented using cancellation
+- interactively snipped together a website tracking different aspect of this experiment
+- like one showing /sys/fs/cgroup/cpu.stat. I think that should be passed into a container
+*/
 func loadtest(w http.ResponseWriter, r *http.Request) {
 	// omg, running this method will spawn a leaky goroutine on each invokation
 	// running at 100%
@@ -144,9 +154,63 @@ func loadtest(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<b>Finished executing = %s</b><hr><b>numCPU =  %s</b>", gomaxprocs, numCPU)
 }
 
+var (
+	loadMu  sync.Mutex
+	workers []chan struct{} // each worker has its own stop channel
+)
+
+// burns one CPU core
+func cpuBurner(stop <-chan struct{}) {
+	for {
+		select {
+		case <-stop:
+			return
+		default:
+			// burn CPU
+		}
+	}
+}
+
+func loadIncrease(w http.ResponseWriter, r *http.Request) {
+	loadMu.Lock()
+	defer loadMu.Unlock()
+
+	stopChan := make(chan struct{})
+	workers = append(workers, stopChan)
+
+	go cpuBurner(stopChan)
+
+	w.Write([]byte("Started 1 more CPU load goroutine\n"))
+}
+
+func loadDecrease(w http.ResponseWriter, r *http.Request) {
+	loadMu.Lock()
+	defer loadMu.Unlock()
+
+	if len(workers) == 0 {
+		w.Write([]byte("No load goroutines to stop\n"))
+		return
+	}
+
+	// stop the last worker
+	last := workers[len(workers)-1]
+	close(last)
+	workers = workers[:len(workers)-1]
+
+	w.Write([]byte("Stopped 1 CPU load goroutine\n"))
+}
+
 func startupMessages() {
 	pid := os.Getpid()
 	fmt.Printf("pid= %d\n", pid)
+}
+
+func loadStats(w http.ResponseWriter, r *http.Request) {
+	loadMu.Lock()
+	count := len(workers)
+	loadMu.Unlock()
+
+	w.Write([]byte(fmt.Sprintf("Active load goroutines: %d\n", count)))
 }
 
 func main() {
@@ -163,7 +227,9 @@ func main() {
 	mux.Handle("/nfs/", http.StripPrefix("/nfs/", http.FileServer(http.Dir("./nfs"))))
 	fmt.Println("mount nfs at ./nfs, served at /nfs")
 
-	mux.HandleFunc("/load", loadtest)
+	mux.HandleFunc("/load/increase", loadIncrease)
+	mux.HandleFunc("/load/decrease", loadDecrease)
+	mux.HandleFunc("/load/stats", loadStats)
 
 	mux.HandleFunc("/httpbin", httpbin)
 	mux.HandleFunc("/foo", foo)
