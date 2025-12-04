@@ -10,6 +10,40 @@
     .padding-4 { padding: 0.5rem; }
     .rounded-2 { border-radius: 0.5rem; }
     .bg-accent:hover { background-color: deepskyblue; cursor: pointer; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+        .tool-card {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: black;
+        }
+        .tool-card:hover {
+            background: #fafafa;
+        }
+        .emoji {
+            font-size: 2rem;
+        }
+        .title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .desc {
+            color: #555;
+        }
+
   </style>
 </head>
 
@@ -19,11 +53,27 @@
   }
 </script>
 
-<a href="nfs/">Secret NFS mount CLICK HERE! 🙀</a>
+
+<!-- CPU Load Manager -->
+<a class="tool-card" href="/load">
+    <div class="emoji">🔥</div>
+    <div>
+        <div class="title">CPU Load Manager</div>
+        <div class="desc">Stress-test your Go server with adjustable CPU load.</div>
+    </div>
+</a>
+<a class="tool-card" href="/nfs">
+    <div class="emoji">❓</div>
+    <div>
+        <div class="title">My Secret Mount!</div>
+        <div class="desc">Checks out whatever is mounted at ./nfs and render it as a webpage..</div>
+    </div>
+</a>
+
 
 <h2>The first HTMX-powered Button 😼  λ-wow!</h2>
 
-<button hx-get="http://localhost:8080/httpbin" hx-target="#contact-ui" hx-swap="outerHTML">
+<button hx-get="/httpbin" hx-target="#contact-ui" hx-swap="outerHTML">
     Invoke Foo
 </button>
 

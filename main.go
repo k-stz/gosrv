@@ -124,8 +124,13 @@ func loggingDecorator(next http.Handler) http.Handler {
 func proc(w http.ResponseWriter, r *http.Request) {
 	gomaxprocs := strconv.Itoa(runtime.GOMAXPROCS(0))
 	numCPU := strconv.Itoa(runtime.NumCPU())
-	fmt.Fprintf(w, "<b>gomaxprocs = %s</b><hr><b>numCPU =  %s</b>", gomaxprocs, numCPU)
+	fmt.Fprintf(w, "<p>gomaxprocs=%s numCPU=%s</p>", gomaxprocs, numCPU)
 }
+
+var (
+	loadMu  sync.Mutex
+	workers []chan struct{} // each worker has its own stop channel
+)
 
 // This is great add logic like:
 /*
@@ -136,28 +141,6 @@ func proc(w http.ResponseWriter, r *http.Request) {
 - interactively snipped together a website tracking different aspect of this experiment
 - like one showing /sys/fs/cgroup/cpu.stat. I think that should be passed into a container
 */
-func loadtest(w http.ResponseWriter, r *http.Request) {
-	// omg, running this method will spawn a leaky goroutine on each invokation
-	// running at 100%
-	go func() {
-		for {
-			// endless loop burning CPU
-		}
-	}()
-
-	// program immediately continues from this go
-	numGoroutines := 1
-	fmt.Fprintf(w, "<b>Load started: %d goroutines at 100%% CPU</b><br>", numGoroutines)
-
-	gomaxprocs := strconv.Itoa(runtime.GOMAXPROCS(0))
-	numCPU := strconv.Itoa(runtime.NumCPU())
-	fmt.Fprintf(w, "<b>Finished executing = %s</b><hr><b>numCPU =  %s</b>", gomaxprocs, numCPU)
-}
-
-var (
-	loadMu  sync.Mutex
-	workers []chan struct{} // each worker has its own stop channel
-)
 
 // burns one CPU core
 func cpuBurner(stop <-chan struct{}) {
@@ -213,6 +196,27 @@ func loadStats(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(fmt.Sprintf("Active load goroutines: %d\n", count)))
 }
 
+func loadStatsView(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+
+	html := fmt.Sprintf(`
+		<div>
+			<strong>Active workers:</strong> %d
+		</div>
+	`, len(workers))
+
+	w.Write([]byte(html))
+}
+
+func loadPage(w http.ResponseWriter, r *http.Request) {
+	loadPageTmpl := filepath.Join("templates", "loadpage.html")
+	tmpl, err := template.ParseFiles(loadPageTmpl)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, nil)
+}
+
 func main() {
 	startupMessages()
 
@@ -227,9 +231,10 @@ func main() {
 	mux.Handle("/nfs/", http.StripPrefix("/nfs/", http.FileServer(http.Dir("./nfs"))))
 	fmt.Println("mount nfs at ./nfs, served at /nfs")
 
+	mux.HandleFunc("/load", loadPage)
 	mux.HandleFunc("/load/increase", loadIncrease)
 	mux.HandleFunc("/load/decrease", loadDecrease)
-	mux.HandleFunc("/load/stats", loadStats)
+	mux.HandleFunc("/load/stats-view", loadStatsView)
 
 	mux.HandleFunc("/httpbin", httpbin)
 	mux.HandleFunc("/foo", foo)
