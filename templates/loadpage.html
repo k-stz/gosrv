@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+	<title>Load Manager</title>
+</head>
+<body>
+
+<h1>CPU Load Manager</h1>
+<div id="gomaxprocs-view"
+     hx-get="/proc"
+	 hx-trigger="load, refresh"
+	 hx-swap="innerHTML">
+</div>
+
+<div>
+	<button
+		hx-post="/load/increase"
+		hx-target="#event-log"
+		hx-swap="innerHTML"
+        hx-on::after-request="htmx.trigger('#stats', 'refresh')">
+		Increase
+	</button>
+
+	<button
+		hx-post="/load/decrease"
+		hx-target="#event-log"
+		hx-swap="innerHTML"
+        hx-on::after-request="htmx.trigger('#stats', 'refresh')">
+		Decrease
+	</button>
+</div>
+
+<hr/>
+
+<div id="stats"
+	hx-get="/load/stats-view"
+	hx-trigger="load, refresh"
+	hx-swap="innerHTML">
+	<!-- stats snippet will load here -->
+</div>
+
+<h3>Event Log</h3>
+<div id="event-log" style="border:1px solid #ccc; padding:10px; min-height:80px;">
+    <!-- log entries go here -->
+</div>
+
+
+</body>
+</html>
