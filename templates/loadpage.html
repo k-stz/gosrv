@@ -1,58 +1,136 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8"/>
-	<script src="https://unpkg.com/htmx.org@1.9.10"></script>
-	<title>Load Manager</title>
+    <meta charset="utf-8"/>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <title>Load Manager</title>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 30px;
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        h1, h3 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #0077ff;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            margin-right: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #005fcc;
+        }
+
+        #event-log {
+            min-height: 100px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
+            padding: 12px;
+        }
+
+        /* htmx loading indicator */
+        .htmx-indicator {
+            display: inline-block;
+            margin-left: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #0077ff;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+            opacity: 0;
+        }
+
+        .htmx-request .htmx-indicator {
+            opacity: 1;
+            transition: opacity 150ms ease-in;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
 
 <h1>CPU Load Manager</h1>
-<div id="gomaxprocs-view"
-     hx-get="/proc"
-	 hx-trigger="load, refresh"
-	 hx-swap="innerHTML">
+
+<div class="card">
+    <h3>Go Runtime</h3>
+    <div id="gomaxprocs-view"
+         hx-get="/proc"
+         hx-trigger="load, refresh"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+    </div>
 </div>
 
-<h3>/sys/fs/cgroup/cpu.max:</h3>
-<div id="gomaxprocs-view"
-     hx-get="/proc/limit"
-	 hx-trigger="load, refresh"
-	 hx-swap="innerHTML">
+<div class="card">
+    <h3>cgroup cpu.max</h3>
+    <div id="cgroup-limit-view"
+         hx-get="/proc/limit"
+         hx-trigger="load, refresh"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+    </div>
 </div>
 
-<div>
-	<button
-		hx-post="/load/increase"
-		hx-target="#event-log"
-		hx-swap="innerHTML"
+<div class="card">
+    <h3>Controls</h3>
+    <button
+        hx-post="/load/increase"
+        hx-target="#event-log"
+        hx-swap="innerHTML"
         hx-on::after-request="htmx.trigger('#stats', 'refresh')">
-		Increase
-	</button>
+        Increase
+    </button>
 
-	<button
-		hx-post="/load/decrease"
-		hx-target="#event-log"
-		hx-swap="innerHTML"
+    <button
+        hx-post="/load/decrease"
+        hx-target="#event-log"
+        hx-swap="innerHTML"
         hx-on::after-request="htmx.trigger('#stats', 'refresh')">
-		Decrease
-	</button>
+        Decrease
+    </button>
 </div>
 
-<hr/>
-
-<div id="stats"
-	hx-get="/load/stats-view"
-	hx-trigger="load, refresh"
-	hx-swap="innerHTML">
-	<!-- stats snippet will load here -->
+<div class="card">
+    <h3>Worker Stats</h3>
+    <div id="stats"
+         hx-get="/load/stats-view"
+         hx-trigger="load, refresh"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+    </div>
 </div>
 
-<h3>Event Log</h3>
-<div id="event-log" style="border:1px solid #ccc; padding:10px; min-height:80px;">
-    <!-- log entries go here -->
+<div class="card">
+    <h3>Event Log</h3>
+    <div id="event-log"></div>
 </div>
-
 
 </body>
 </html>
