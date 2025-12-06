@@ -14,6 +14,13 @@
 	 hx-swap="innerHTML">
 </div>
 
+<h3>/sys/fs/cgroup/cpu.max:</h3>
+<div id="gomaxprocs-view"
+     hx-get="/proc/limit"
+	 hx-trigger="load, refresh"
+	 hx-swap="innerHTML">
+</div>
+
 <div>
 	<button
 		hx-post="/load/increase"

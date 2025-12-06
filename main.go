@@ -127,6 +127,14 @@ func proc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<p>gomaxprocs=%s numCPU=%s</p>", gomaxprocs, numCPU)
 }
 
+func procLimit(w http.ResponseWriter, r *http.Request) {
+	contents, err := os.ReadFile("/sys/fs/cgroup/cpu.max")
+	if err != nil {
+		fmt.Fprintf(w, "<p>couldn't read file /sys/fs/cgroup/cpu.max: %s </p>", err)
+	}
+	fmt.Fprintf(w, "<p>cpu.max: %s</p>", contents)
+}
+
 var (
 	loadMu  sync.Mutex
 	workers []chan struct{} // each worker has its own stop channel
@@ -254,6 +262,8 @@ func main() {
 	mux.HandleFunc("/contact/1/edit", testEditThing)
 
 	mux.HandleFunc("/proc", proc)
+
+	mux.HandleFunc("/proc/limit", procLimit)
 
 	loggingMux := loggingDecorator(mux)
 	fmt.Println("Listening on :8080")
