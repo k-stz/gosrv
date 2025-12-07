@@ -267,6 +267,20 @@ func threadsViewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func threadsIncreaseHandler(w http.ResponseWriter, r *http.Request) {
+	currentGomaxprocs := runtime.GOMAXPROCS(0)
+	currentGomaxprocs++
+	runtime.GOMAXPROCS(currentGomaxprocs)
+	io.WriteString(w, fmt.Sprintf("Started 1 more CPU load goroutine: %s", currentGomaxprocs))
+}
+
+func threadsDecreaseHandler(w http.ResponseWriter, r *http.Request) {
+	currentGomaxprocs := runtime.GOMAXPROCS(0)
+	currentGomaxprocs--
+	runtime.GOMAXPROCS(currentGomaxprocs)
+	io.WriteString(w, fmt.Sprintf("Started 1 more CPU load goroutine: %s", currentGomaxprocs))
+}
+
 // This function gathers all metrics that start with /sched/ and formats them into an HTML list.
 func serveAllSchedMetrics(w http.ResponseWriter, r *http.Request) {
 	// 1. Get all available metric descriptions
@@ -331,6 +345,9 @@ func main() {
 	mux.HandleFunc("/load/stats-view", loadStatsView)
 
 	mux.HandleFunc("/threads/view", threadsViewHandler)
+	mux.HandleFunc("/threads/increase", threadsIncreaseHandler)
+	mux.HandleFunc("/threads/decrease", threadsDecreaseHandler)
+
 	mux.HandleFunc("/metrics/sched", serveAllSchedMetrics)
 
 	mux.HandleFunc("/httpbin", httpbin)
