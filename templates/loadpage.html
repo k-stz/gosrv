@@ -99,6 +99,27 @@
 </div>
 
 <div class="card">
+    <h3>"kernel threads (Ms)"</h3>
+    <div id="kernel-threads-view"
+         hx-get="/threads/view"
+         hx-trigger="load, refresh"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+    </div>
+</div>
+
+<div class="card">
+    <h3>"go sched metrics"</h3>
+    <div id="go-metrics-scheds"
+         hx-get="/metrics/sched"
+         hx-trigger="load, refresh"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+    </div>
+</div>
+
+
+<div class="card">
     <h3>Controls</h3>
     <button
         hx-post="/load/increase"

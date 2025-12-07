@@ -8,10 +8,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/metrics"
 	"strconv"
+	"strings"
 	"sync"
 	// not needed with golang 1.25+
 	// _ "go.uber.org/automaxprocs"
+	//
 )
 
 func httpbin(w http.ResponseWriter, r *http.Request) {
@@ -225,6 +228,89 @@ func loadPage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+func threadsViewHandler(w http.ResponseWriter, r *http.Request) {
+	// Metric name for active OS threads
+
+	const metricName = "/sched/:goroutines"
+
+	//  /sched/gomaxprocs:threads
+	// /sched/gomaxprocs:threads /sched/goroutines:goroutines
+	// /sched/goroutines:goroutines /sched/latencies:seconds
+	// /sched/latencies:seconds /sched/pauses/stopping/gc:seconds
+	// /sched/pauses/stopping/gc:seconds /sched/pauses/stopping/other:seconds
+	// /sched/pauses/stopping/other:seconds /sched/pauses/total/gc:seconds
+	// /sched/pauses/total/gc:seconds /sched/pauses/total/other:seconds
+	// /sched/pauses/total/other:seconds /sync/mutex/wait/total:seconds
+	// /sync/mutex/wait/total:seconds
+
+	// Create a list of metrics to read
+	samples := make([]metrics.Sample, 1)
+	samples[0].Name = metricName
+
+	// Read the samples once
+	//metrics.Read(samples)
+	allMetrics := metrics.All()
+
+	for _, m := range allMetrics {
+		io.WriteString(w, fmt.Sprintf("%s <br>", m.Name))
+
+		fmt.Fprintf(w, "%s\n", m.Name)
+	}
+
+	// Extract the value and write to the response writer
+	if samples[0].Value.Kind() == metrics.KindUint64 {
+		threadCount := samples[0].Value.Uint64()
+		// Format the output directly as a string to be injected into the DOM
+		io.WriteString(w, fmt.Sprintf("%d", threadCount))
+	} else {
+		io.WriteString(w, fmt.Sprintf("Metric unavailable: %s", metricName))
+	}
+}
+
+// This function gathers all metrics that start with /sched/ and formats them into an HTML list.
+func serveAllSchedMetrics(w http.ResponseWriter, r *http.Request) {
+	// 1. Get all available metric descriptions
+	descs := metrics.All()
+
+	// 2. Filter for only the /sched/ metrics and prepare the sample slice
+	var schedMetrics []string
+	for _, desc := range descs {
+		if strings.HasPrefix(desc.Name, "/sched/") {
+			schedMetrics = append(schedMetrics, desc.Name)
+		}
+	}
+
+	// Prepare a slice to hold the samples we want to read
+	samples := make([]metrics.Sample, len(schedMetrics))
+	for i, name := range schedMetrics {
+		samples[i].Name = name
+	}
+
+	// 3. Read the values for all filtered metrics at once
+	metrics.Read(samples)
+
+	// 4. Format the results as an HTML Unordered List (UL) for the frontend
+	fmt.Fprintf(w, "<ul>")
+	for i, sample := range samples {
+		// Safely extract the value based on its kind
+		var valueStr string
+		switch sample.Value.Kind() {
+		case metrics.KindUint64:
+			valueStr = fmt.Sprintf("%d", sample.Value.Uint64())
+		case metrics.KindFloat64:
+			valueStr = fmt.Sprintf("%.4f", sample.Value.Float64())
+		case metrics.KindFloat64Histogram:
+			valueStr = fmt.Sprintf("Histogram data (Go %s+)", "1.19") // Latencies are often histograms
+		default:
+			valueStr = "N/A or Unknown Kind"
+		}
+
+		// Print an HTML list item
+		fmt.Fprintf(w, "<li><strong>%s</strong>: %s</li>\n", schedMetrics[i], valueStr)
+	}
+	fmt.Fprintf(w, "</ul>")
+}
+
 func main() {
 	startupMessages()
 
@@ -243,6 +329,9 @@ func main() {
 	mux.HandleFunc("/load/increase", loadIncrease)
 	mux.HandleFunc("/load/decrease", loadDecrease)
 	mux.HandleFunc("/load/stats-view", loadStatsView)
+
+	mux.HandleFunc("/threads/view", threadsViewHandler)
+	mux.HandleFunc("/metrics/sched", serveAllSchedMetrics)
 
 	mux.HandleFunc("/httpbin", httpbin)
 	mux.HandleFunc("/foo", foo)
