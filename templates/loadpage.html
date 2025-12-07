@@ -86,6 +86,30 @@
          hx-swap="innerHTML">
         <span class="htmx-indicator"></span>
     </div>
+
+    <!-- TODO IMPLEMENT -->
+    <button
+        hx-post="/threads/increase"
+        hx-target="#event-log"
+        hx-swap="innerHTML"
+        hx-on::after-request="htmx.trigger('#stats', 'refresh')">
+        Increase
+    </button>
+
+    <button
+        hx-post="/threads/decrease"
+        hx-target="#event-log"
+        hx-swap="innerHTML"
+        hx-on::after-request="htmx.trigger('#stats', 'refresh')">
+        Decrease
+    </button>
+    <h3>"go sched metrics"</h3>
+    <div id="go-metrics-scheds"
+         hx-get="/metrics/sched"
+         hx-trigger="load, refresh"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+    </div>
 </div>
 
 <div class="card">
@@ -98,29 +122,9 @@
     </div>
 </div>
 
-<div class="card">
-    <h3>"kernel threads (Ms)"</h3>
-    <div id="kernel-threads-view"
-         hx-get="/threads/view"
-         hx-trigger="load, refresh"
-         hx-swap="innerHTML">
-        <span class="htmx-indicator"></span>
-    </div>
-</div>
 
 <div class="card">
-    <h3>"go sched metrics"</h3>
-    <div id="go-metrics-scheds"
-         hx-get="/metrics/sched"
-         hx-trigger="load, refresh"
-         hx-swap="innerHTML">
-        <span class="htmx-indicator"></span>
-    </div>
-</div>
-
-
-<div class="card">
-    <h3>Controls</h3>
+    <h3>Worker State</h3>
     <button
         hx-post="/load/increase"
         hx-target="#event-log"
@@ -136,10 +140,6 @@
         hx-on::after-request="htmx.trigger('#stats', 'refresh')">
         Decrease
     </button>
-</div>
-
-<div class="card">
-    <h3>Worker Stats</h3>
     <div id="stats"
          hx-get="/load/stats-view"
          hx-trigger="load, refresh"
