@@ -271,6 +271,7 @@ func threadsIncreaseHandler(w http.ResponseWriter, r *http.Request) {
 	currentGomaxprocs := runtime.GOMAXPROCS(0)
 	currentGomaxprocs++
 	runtime.GOMAXPROCS(currentGomaxprocs)
+	w.Header().Set("HX-Trigger", "stateChanged")
 	io.WriteString(w, fmt.Sprintf("Started 1 more CPU load goroutine: %s", currentGomaxprocs))
 }
 
@@ -278,6 +279,7 @@ func threadsDecreaseHandler(w http.ResponseWriter, r *http.Request) {
 	currentGomaxprocs := runtime.GOMAXPROCS(0)
 	currentGomaxprocs--
 	runtime.GOMAXPROCS(currentGomaxprocs)
+	w.Header().Set("HX-Trigger", "stateChanged")
 	io.WriteString(w, fmt.Sprintf("Started 1 more CPU load goroutine: %s", currentGomaxprocs))
 }
 

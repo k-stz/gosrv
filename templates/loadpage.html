@@ -82,12 +82,12 @@
     <h3>Go Runtime</h3>
     <div id="gomaxprocs-view"
          hx-get="/proc"
-         hx-trigger="load, refresh"
+         hx-trigger="stateChanged from:body"
          hx-swap="innerHTML">
         <span class="htmx-indicator"></span>
+        Placeholder
     </div>
 
-    <!-- TODO IMPLEMENT -->
     <button
         hx-post="/threads/increase"
         hx-target="#event-log"
