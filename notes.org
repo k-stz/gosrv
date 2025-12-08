@@ -1,0 +1,58 @@
+#+title: Notes
+
+<2025-12-08 Mo>
+
+* HTMX usecase: Updating multiple Content
+sources:
+- https://htmx.org/examples/update-other-content/#events
+- https://htmx.org/attributes/hx-trigger/
+
+The "CPU load Manager" app, allows to interactively change goruntime cpu relevant aspects of your program, like scaling up the number of workers running and adding goroutines running a full load.
+
+I wanted the website to be responsive such that when tweaking with any of the knobs would update a bunch of =<div>= on the site, that had a =hx-get= call imbedded to some relevant information.
+
+Though a page reload would work, I wanted it to be more responsive, SPA-style if you will. At first I used =hx-on= events. For example when pressing the "Increase" button:
+
+#+begin_src html
+    <button
+        hx-post="/threads/increase"
+        hx-target="#event-log"
+        hx-swap="innerHTML"
+        hx-on::after-request="htmx.trigger('#stats', 'refresh')">
+        Increase
+    </button>
+#+end_src
+
+The event "refresh" would be send to the div with the id "#stats". Which looks looked like this:
+
+#+begin_src html
+    <div id="stats"
+         hx-get="/load/stats-view"
+         hx-trigger="load, refresh"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+    </div>
+#+end_src
+Which would listen on the trigger =refresh= and fetch its content form =/load/stats-view=.
+
+Though this works it scales poorly. The moment I wanted to update multiple divs on the screen, I would have to add multiple =hx-on::= attributes, I'm not even sure that works. But that's not necessary the htmx docs have a more elegant solution.
+
+** Event-triggered multiple Content update
+Instead we add the following custom event to every field we want to react to changes:
+
+#+begin_src html
+<div id="gomaxprocs-view"
+         hx-get="/proc"
+         hx-trigger="stateChanged from:body"
+         hx-swap="innerHTML">
+        <span class="htmx-indicator"></span>
+        Placeholder
+    </div>
+#+end_src
+
+Where the =from:body= syntax is including the scope including and beneath the =<body>= DOM element. How is the event triggered? By the response header in the request I want to react on. You use the magic header =HX-trigger:stateChanged= where stateChanged can be any custom events you chose. Here is how to triggered it in a go ServeHTTP handler:
+#+begin_src go
+	w.Header().Set("HX-Trigger", "stateChanged")
+#+end_src
+
+It works!
