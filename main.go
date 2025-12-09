@@ -174,6 +174,7 @@ func loadIncrease(w http.ResponseWriter, r *http.Request) {
 
 	go cpuBurner(stopChan)
 
+	w.Header().Set("HX-Trigger", "stateChanged")
 	w.Write([]byte("Started 1 more CPU load goroutine\n"))
 }
 
@@ -191,6 +192,7 @@ func loadDecrease(w http.ResponseWriter, r *http.Request) {
 	close(last)
 	workers = workers[:len(workers)-1]
 
+	w.Header().Set("HX-Trigger", "stateChanged")
 	w.Write([]byte("Stopped 1 CPU load goroutine\n"))
 }
 
