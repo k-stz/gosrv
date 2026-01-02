@@ -376,8 +376,17 @@ func main() {
 	mux.HandleFunc("/proc/limit", procLimit)
 
 	loggingMux := loggingDecorator(mux)
-	fmt.Println("Listening on :8080")
-	err := http.ListenAndServe(":8080", loggingMux)
+
+	// oauth
+	SetupOauth(mux)
+
+	// Listen port
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		port = ":5000"
+	}
+	fmt.Println("Listening on :", port)
+	err := http.ListenAndServe(port, loggingMux)
 	if err != nil {
 		panic(err)
 	}
