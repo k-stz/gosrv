@@ -42,6 +42,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("SomeHeader", "Foobar")
 	state := randomState()
 
+	// wait is this creating the Cookie header?
 	session, _ := store.Get(r, "auth")
 	session.Values["state"] = state
 	session.Save(r, w)
