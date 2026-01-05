@@ -59,44 +59,54 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
-	// Verify state and errors.
-
 	fmt.Println("Entered handleOAuth2Callback", r.URL.Path)
 
+	session, _ := store.Get(r, "auth")
+	if r.URL.Query().Get("state") != session.Values["state"] {
+		// How to trigger invalid state:
+		// open two tabs localhost:5000/login
+		http.Error(w, "invalid state", http.StatusBadRequest)
+		fmt.Printf("handleOAuth2Callback: verify state failed. request state=%v, session.values[\"state\"]=%v \n", r.URL.Query().Get("state"), session.Values["state"])
+		return
+	}
+	// Verify state and errors.
 	oauth2Token, err := oauth2Config.Exchange(ctx, r.URL.Query().Get("code"))
 	if err != nil {
-		fmt.Println("handleOAuth2Callback: oauth2configexchange failed. Err:", err)
+		fmt.Println("FATAL: handleOAuth2Callback: oauth2configexchange failed. Err:", err)
+		return // fatal error so we must return
 	}
 
 	// Extract the ID Token from OAuth2 token.
 	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 	if !ok {
 		// handle missing token
-		fmt.Println("handleOAuth2Callback: TODO handle missing token. Err:", err)
-
+		fmt.Println("FATAL: handleOAuth2Callback: TODO handle missing token. Err:", err)
+		return // fatal error so we must return
 	}
 
 	// Parse and verify ID Token payload.
-	idToken, err := verifier.Verify(ctx, rawIDToken)
+	idToken, err := verifier.Verify(r.Context(), rawIDToken)
 	if err != nil {
 		// handle error
-		fmt.Println("handleOAuth2Callback: TODO parse and verify ID token payloa. Err:", err)
-
+		fmt.Println("FATAL: handleOAuth2Callback: TODO parse and verify ID token payloa. Err:", err)
+		return // fatal error so we must return
 	}
 
 	// Extract custom claims
+	// THese are the information about WHO logged in
 	var claims struct {
 		Email    string `json:"email"`
 		Verified bool   `json:"email_verified"`
 	}
 	if err := idToken.Claims(&claims); err != nil {
 		// handle error
-		fmt.Println("handleOAuth2Callback: TODO hanndle idtoken.Claims error. Err:", err)
+		fmt.Println("handleOAuth2Callback: TODO handling idtoken.Claims error. Err:", err)
 	}
 
 	fmt.Println("handleOAuth2Callback: Maybe reached end of oauthflow successfully. Claims:", claims)
-
-	io.WriteString(w, fmt.Sprintf("%s <br>", claims))
+	io.WriteString(w, fmt.Sprintf("%v <br>", claims))
+	// this sholud return the full raw JWT (Oauth OIDC ID TOKEN)
+	io.WriteString(w, fmt.Sprintf("rawIDToken: %v", rawIDToken))
 
 }
 

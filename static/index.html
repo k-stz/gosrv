@@ -69,12 +69,19 @@
         <div class="desc">Checks out whatever is mounted at ./nfs and render it as a webpage..</div>
     </div>
 </a>
+<a class="tool-card" href="/login">
+    <div class="emoji">🔑</div>
+    <div>
+        <div class="title">OAuth2 Login!</div>
+        <div class="desc">Attempts OAuth2 OIDC flow to log you in using keycloak</div>
+    </div>
+</a>
 
 
 <h2>The first HTMX-powered Button 😼  λ-wow!</h2>
 
-<button hx-get="/httpbin" hx-target="#contact-ui" hx-swap="outerHTML">
-    Invoke Foo
+<button hx-get="/httpbin" hx-target="#contact-ui" hx-swap="innerHTML">
+    Invoke /httpbin
 </button>
 
 

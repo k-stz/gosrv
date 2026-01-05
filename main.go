@@ -9,32 +9,51 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/metrics"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 	// not needed with golang 1.25+
 	// _ "go.uber.org/automaxprocs"
 	//
 )
 
 func httpbin(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Go Server Processed you're request:</h1><br>"))
-	w.Write([]byte("<br><b>Method</b>:" + r.Method))
-	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte("<h1>Go Server Processed you're request:</h1>"))
+	w.Write([]byte("<br><b>Time now:</b> " + time.Now().String()))
+	w.Write([]byte("<br><b>Method</b>: " + r.Method))
+	// w.Header().Set("Content-Type", "text/html")
+	// else browser will cache invokations to this handler!!!
+	//w.Header().Set("Cache-Control", "no-store, must-revalidate")
 	// Wow, this prints a pretty cool table!
-	fmt.Fprintln(w, "Request Headers<br>:<table border='1'><tr><th>Header</th><th>Value</th></tr>")
-	for name, values := range r.Header {
+	w.Write([]byte("<br><b>RequestURI</b>: " + r.RequestURI))
+	w.Write([]byte("<br><b>Request Headers</b>:<br><table border='1'><tr><th>Header</th><th>Value</th></tr>"))
+	// Collect and sort header names
+	keys := make([]string, 0, len(r.Header))
+	for name := range r.Header {
+		keys = append(keys, name)
+	}
+	sort.Strings(keys)
+
+	// Print headers in alphabetical order
+	for _, name := range keys {
+		values := r.Header[name]
 		for _, value := range values {
-			fmt.Fprintf(w, "<tr><td>%s</td><td>%s</td></tr>", name, value)
+			fmt.Fprintf(w,
+				"<tr><td>%s</td><td>%s</td></tr>",
+				name,
+				value,
+			)
 		}
 	}
-	w.Write([]byte("<br><b>RequestURI</b>:" + r.RequestURI))
+	w.Write([]byte("</table>"))
 
-	w.Write([]byte("<br><b>Body:</b><br>"))
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("couldn't read body", string(body))
 	}
+	w.Write([]byte("<br><b>Body:</b><br>"))
 	w.Write(body)
 }
 
