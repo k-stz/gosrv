@@ -42,7 +42,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("SomeHeader", "Foobar")
 	state := randomState()
 
-	// wait is this creating the Cookie header?
+	// THIS creates the Cookie header! And it is necessary in sofar
+	// as we need the state in the state header to be set!!
 	session, _ := store.Get(r, "auth")
 	session.Values["state"] = state
 	session.Save(r, w)
@@ -111,6 +112,15 @@ func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// testing if we can set cookies willy-nilly
+func setMyCookie(w http.ResponseWriter, r *http.Request) {
+	cookie := "mycookie=bXlBd2Vzb21lQ29va2llIGJlbGl2ZSBpdAo="
+
+	w.Header().Add("Set-Cookie", cookie)
+
+	io.WriteString(w, fmt.Sprintf("attempted to set cookie in your browser setting the following header on this Response:<br> Set-Cookie: %v", cookie))
+}
+
 func SetupOauth(mux *http.ServeMux) {
 	provider, err := oidc.NewProvider(ctx, keycloakIssuer)
 	if err != nil {
@@ -131,5 +141,7 @@ func SetupOauth(mux *http.ServeMux) {
 
 	mux.HandleFunc("/login", loginHandler)
 	mux.HandleFunc("/callback", handleOAuth2Callback)
+
+	mux.HandleFunc("/setcookie", setMyCookie)
 
 }
