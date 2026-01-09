@@ -304,6 +304,36 @@ func threadsDecreaseHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, fmt.Sprintf("Started 1 more CPU load goroutine: %s", currentGomaxprocs))
 }
 
+func xssExampleHandler(w http.ResponseWriter, r *http.Request) {
+	xssPageTemplate := filepath.Join("templates", "xss-example.html")
+	tmpl, err := template.ParseFiles(xssPageTemplate)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, nil)
+}
+
+// This handler is susceptible to XSS:
+// example of XSS injecting an img:
+// (when website is running on localhost:5000)
+// http://localhost:5000/echo?q=%3Cimg%20src%3D%22https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F3%2F31%2FNetherlandwarf.jpg%2F960px-Netherlandwarf.jpg%22%20style%3D%22width%3A%20100px%22%3E
+// basically just urlencode whatever script you want to use, and put it:
+// http://localhost:5000/echo?q=<HERE>
+func echoHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	q := r.URL.Query().Get("q")
+
+	// ⚠️ INTENTIONALLY VULNERABLE
+	// Directly embedding unescaped user input into HTML
+	fmt.Fprintf(w, `
+		<div>
+			<strong>You typed:</strong>
+			%s
+		</div>
+	`, q)
+}
+
 // This function gathers all metrics that start with /sched/ and formats them into an HTML list.
 func serveAllSchedMetrics(w http.ResponseWriter, r *http.Request) {
 	// 1. Get all available metric descriptions
@@ -394,10 +424,14 @@ func main() {
 
 	mux.HandleFunc("/proc/limit", procLimit)
 
+	// Test XSS
+	mux.HandleFunc("/xss", xssExampleHandler)
+	mux.HandleFunc("/echo", echoHandler)
+
 	loggingMux := loggingDecorator(mux)
 
 	// oauth
-	SetupOauth(mux)
+	//SetupOauth(mux)
 
 	// Listen port
 	port, ok := os.LookupEnv("PORT")
