@@ -42,7 +42,41 @@ What attack scenarios are possible? When the input parameters are GET parameters
 
 <footer>Hint: Try to use HTML tags to see it being rendered by the browser.</footer>
 
+<h1>Stored XSS Example</h2>
 
+<div class="comments-section">
+
+  <!-- Add new comment -->
+  <form
+    hx-post="/comments/add"
+    hx-target="#comments"
+    hx-swap="innerHTML"
+    class="comment-form"
+  >
+    <input
+      type="text"
+      name="content"
+      placeholder="Write a comment…"
+      required
+      class="comment-input"
+    />
+    <button type="submit" class="comment-submit">
+      💬 Add Comment
+    </button>
+  </form>
+
+  <!-- Comments list -->
+  <div
+    id="comments"
+    hx-get="/comments"
+    hx-trigger="load, commentAdded from:body"
+    hx-swap="innerHTML"
+  >
+    No Comments yet
+    <!-- comments.tmpl will be rendered here -->
+  </div>
+
+</div>
 
 </body>
 </html>

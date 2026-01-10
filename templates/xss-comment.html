@@ -1,0 +1,17 @@
+{{- if . }}
+  {{- range . }}
+    <div class="comment">
+      <div class="comment-header">
+        <span class="comment-author">{{ .Author }}</span>
+        <span class="comment-timestamp">{{ .CreatedAt }}</span>
+      </div>
+      <div class="comment-body">
+        {{ .Content }}
+      </div>
+    </div>
+  {{- end }}
+{{- else }}
+  <div class="comment-empty">
+    No comments yet.
+  </div>
+{{- end }}

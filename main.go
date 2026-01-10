@@ -19,6 +19,18 @@ import (
 	//
 )
 
+type Comment struct {
+	Author    string
+	Content   string
+	CreatedAt time.Time
+}
+
+var (
+	comments []Comment = []Comment{
+		//{Author: "Bob", Content: "Nice website!", CreatedAt: time.Now()},
+	}
+)
+
 func httpbin(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Go Server Processed you're request:</h1>"))
 	w.Write([]byte("<br><b>Time now:</b> " + time.Now().String()))
@@ -313,6 +325,49 @@ func xssExampleHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+func xssCommentHandler(w http.ResponseWriter, r *http.Request) {
+	templatePath := filepath.Join("templates", "xss-comment.html")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, comments)
+}
+
+func addCommentHandler(w http.ResponseWriter, r *http.Request) {
+	// we use this htmx trigger to autoload the newly added comment!
+	w.Header().Add("HX-Trigger", "commentAdded")
+	// only accept POST method
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid form data", http.StatusBadRequest)
+		return
+	}
+	content := strings.TrimSpace(r.FormValue("content"))
+	if content == "" {
+		http.Error(w, "comment cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	comment := Comment{
+		Author:    "Anonymous", // derive later from ID TOKEN!
+		Content:   content,
+		CreatedAt: time.Now(),
+	}
+	// actually racy, you should use a lock on the comments slice! Is this a perfect
+	// example of this being a best fit for Mutex vs go channels?
+	comments = append(comments, comment)
+
+	// We're done here, we're not returning a body, all this endpoint does it mutate server
+	// state. This post doesn't responsd with any HTML. For that the /comment endpoint is used!
+	w.WriteHeader(http.StatusNoContent)
+	fmt.Println("comments currently", comments)
+}
+
 // This handler is susceptible to XSS:
 // example of XSS injecting an img:
 // (when website is running on localhost:5000)
@@ -426,6 +481,9 @@ func main() {
 
 	// Test XSS
 	mux.HandleFunc("/xss", xssExampleHandler)
+	mux.HandleFunc("/comments", xssCommentHandler)
+	mux.HandleFunc("/comments/add", addCommentHandler)
+
 	mux.HandleFunc("/echo", echoHandler)
 
 	loggingMux := loggingDecorator(mux)
