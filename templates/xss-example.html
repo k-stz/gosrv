@@ -6,9 +6,26 @@
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
 </head>
 <body>
-  <h1>htmx Reflected XSS Demo</h1>
+<h1>htmx Reflected XSS Demo</h1>
+
+<h2>What is Reflected Cross-Site Scripting (XSS)?</h2>
+
+<p>
+Reflected cross-site scripting is one of the three main types of cross-site scripting vulnerabilities. A website is vulnerable to reflected XSS when it takes user input, such as the input from the form below, and returns it <b>unsanitized</b> in an HTML response. This allows an attacker to inject HTML, CSS, or JavaScript code and have it executed in the victim’s browser.
+</p>
+
+<p>
+It is called <i>reflected</i> because the user input is reflected back to the user unchanged in the HTTP response.
+</p>
+
+<p>
+What attack scenarios are possible? When the input parameters are GET parameters, an attacker can craft a link to the website that contains their malicious code directly in the URL. For example, the link below points to an endpoint that reads input from the GET parameter <code>q</code> and <i>reflects</i> it completely unfiltered:
+<br>
+<a href="http://localhost:5000/echo?q=%3Cimg%20src%3D%22https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F3%2F31%2FNetherlandwarf.jpg%2F960px-Netherlandwarf.jpg%22%20style%3D%22width%3A%20100px%22%3E">👉 Show reflected XSS example</a>
+</p>
 
   <p>Type something below:</p>
+
 
   <input
     type="text"
@@ -22,5 +39,10 @@
   <div id="output">
     <!-- Server response gets swapped here -->
   </div>
+
+<footer>Hint: Try to use HTML tags to see it being rendered by the browser.</footer>
+
+
+
 </body>
 </html>
