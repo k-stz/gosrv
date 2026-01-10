@@ -1,0 +1,90 @@
+/* Overall section */
+.comments-section {
+  max-width: 600px;
+  margin: 2rem auto;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Comment form */
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+.comment-submit {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.comment-submit:hover {
+  background: #4338ca;
+}
+
+/* Comments list */
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Individual comment */
+.comment {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+
+/* Header row */
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #111827;
+}
+
+.comment-timestamp {
+  white-space: nowrap;
+}
+
+/* Body */
+.comment-body {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #1f2937;
+  word-wrap: break-word;
+}
+
+/* Empty state */
+.comment-empty {
+  text-align: center;
+  padding: 1rem;
+  color: #6b7280;
+  font-style: italic;
+}

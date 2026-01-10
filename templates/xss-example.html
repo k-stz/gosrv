@@ -59,6 +59,7 @@ What attack scenarios are possible? When the input parameters are GET parameters
     hx-post="/comments/add"
     hx-target="#comments"
     hx-swap="innerHTML"
+    hx-on::after-request="if(event.detail.successful) this.reset()"
     class="comment-form"
   >
     <input
@@ -72,12 +73,14 @@ What attack scenarios are possible? When the input parameters are GET parameters
       💬 Add Comment
     </button>
   </form>
+  <button class="btn primary" hx-trigger="click, keyup[altKey&&shiftKey&&key=='D'] from:body"
+        hx-post="/comments/pop">Remove last comment (alt-shift-D)</button>
 
   <!-- Comments list -->
   <div
     id="comments"
     hx-get="/comments"
-    hx-trigger="load, commentAdded from:body"
+    hx-trigger="load, commentsUpdate from:body"
     hx-swap="innerHTML"
   >
     No Comments yet

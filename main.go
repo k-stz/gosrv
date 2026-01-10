@@ -337,7 +337,7 @@ func xssCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 func addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// we use this htmx trigger to autoload the newly added comment!
-	w.Header().Add("HX-Trigger", "commentAdded")
+	w.Header().Add("HX-Trigger", "commentsUpdate")
 	// only accept POST method
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -366,7 +366,18 @@ func addCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// We're done here, we're not returning a body, all this endpoint does it mutate server
 	// state. This post doesn't responsd with any HTML. For that the /comment endpoint is used!
 	w.WriteHeader(http.StatusNoContent)
-	fmt.Println("comments currently", comments)
+}
+
+func popCommentHandler(w http.ResponseWriter, r *http.Request) {
+	// we use this htmx trigger to autoload the newly added comment!
+	w.Header().Add("HX-Trigger", "commentsUpdate")
+	if !(len(comments) >= 1) {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	comments = comments[0 : len(comments)-1]
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // This handler is susceptible to XSS:
@@ -484,6 +495,7 @@ func main() {
 	mux.HandleFunc("/xss", xssExampleHandler)
 	mux.HandleFunc("/comments", xssCommentHandler)
 	mux.HandleFunc("/comments/add", addCommentHandler)
+	mux.HandleFunc("/comments/pop", popCommentHandler)
 
 	mux.HandleFunc("/echo", echoHandler)
 
