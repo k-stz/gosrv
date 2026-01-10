@@ -21,7 +21,7 @@ import (
 
 type Comment struct {
 	Author    string
-	Content   string
+	Content   template.HTML // to show stored XSS, else "string" is better
 	CreatedAt time.Time
 }
 
@@ -327,6 +327,7 @@ func xssExampleHandler(w http.ResponseWriter, r *http.Request) {
 
 func xssCommentHandler(w http.ResponseWriter, r *http.Request) {
 	templatePath := filepath.Join("templates", "xss-comment.html")
+	// html/template automatically does
 	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
 		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
@@ -355,7 +356,7 @@ func addCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	comment := Comment{
 		Author:    "Anonymous", // derive later from ID TOKEN!
-		Content:   content,
+		Content:   template.HTML(content),
 		CreatedAt: time.Now(),
 	}
 	// actually racy, you should use a lock on the comments slice! Is this a perfect

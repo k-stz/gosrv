@@ -44,6 +44,14 @@ What attack scenarios are possible? When the input parameters are GET parameters
 
 <h1>Stored XSS Example</h2>
 
+<p>Stored Cross-Site Scripting (XSS) is an attack against a web application in which user-supplied input is persistently stored by the application (for example, in comments, forum posts, or user profiles) and later rendered in a victim’s browser without proper output encoding or sanitization.</p>
+
+<p>If the application treats this stored input as trusted HTML, an attacker can embed malicious JavaScript. When another user views the affected content, the malicious script executes in the context of the vulnerable site.</p>
+
+<p>Add a comment below, and try to input HTML, CSS or JavaScript. This time it will be presistet and anyone who visits this site will have this code loaded. This makes this kind of attack more severe than a reflected XSS, as no specifically crafted link is necessary.</p>
+
+<p> Hint: add a comment with html, for example &lt;img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Netherlandwarf.jpg/500px-Netherlandwarf.jpg"&gt;</p>
+
 <div class="comments-section">
 
   <!-- Add new comment -->
