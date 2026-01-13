@@ -1,0 +1,44 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+  <meta charset="UTF-8">
+  <title>Ajax Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+
+  <script>
+    a = new XMLHttpRequest();
+    myReplacer = () => {
+        console.log("myReplacer called!");
+        a.open("GET", "http://localhost:5000/echo?q=ajax-powers-coming!");
+        a.send();
+        // here we basically do what htmx does with: 
+        // hx-get="/echo", hx-trigger=load, hx-target="#mydiv" does 
+        a.onload = function() {
+            console.log("xmlhttprequest finished, response text is:", a.responseText);
+            responseText = a.responseText
+            document.getElementById("mydiv").innerHTML = responseText
+        }
+    }
+    
+    
+    // finally trigger the a.send() on click
+    
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+  <body>
+    <div hx-get="/echo?q=magic"
+    hx-trigger="click"
+    hx-target="#mydiv2">Click to replace #mydiv2 using htmx powers!</div>
+    <br>
+   <div id="mydiv" onclick="myReplacer()">
+      Click to replace #mydiv with regular xmlhttprequest
+    </div>
+    <br>
+
+    <div id="mydiv2">
+      This text replaced with htmx
+    </div>
+  </body>
+</html>

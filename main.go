@@ -445,6 +445,29 @@ func serveAllSchedMetrics(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "</ul>")
 }
 
+func ajaxExampleHandler(w http.ResponseWriter, r *http.Request) {
+	templatePath := filepath.Join("templates", "ajax-example.html")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, nil)
+
+}
+
+func corsExampleHandler(w http.ResponseWriter, r *http.Request) {
+	// disable CORS
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
+	templatePath := filepath.Join("templates", "cors-example.html")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, nil)
+
+}
+
 func main() {
 	startupMessages()
 
@@ -498,6 +521,9 @@ func main() {
 	mux.HandleFunc("/comments/pop", popCommentHandler)
 
 	mux.HandleFunc("/echo", echoHandler)
+
+	mux.HandleFunc("/cors", corsExampleHandler)
+	mux.HandleFunc("/ajax", ajaxExampleHandler)
 
 	loggingMux := loggingDecorator(mux)
 
