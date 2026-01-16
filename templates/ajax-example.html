@@ -7,12 +7,12 @@
 
   <script>
     a = new XMLHttpRequest();
-    myReplacer = () => {
+    myReplacer = () => { 
         console.log("myReplacer called!");
         a.open("GET", "http://localhost:5000/echo?q=ajax-powers-coming!");
         a.send();
         // here we basically do what htmx does with: 
-        // hx-get="/echo", hx-trigger=load, hx-target="#mydiv" does 
+        // hx-get="/echo", hx-trigger=load, hx-target="#mydiv" does
         a.onload = function() {
             console.log("xmlhttprequest finished, response text is:", a.responseText);
             responseText = a.responseText
@@ -20,9 +20,7 @@
         }
     }
     
-    
     // finally trigger the a.send() on click
-    
   </script>
 
   <link rel="stylesheet" href="styles.css">

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -455,6 +456,27 @@ func ajaxExampleHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func dateHandler(w http.ResponseWriter, r *http.Request) {
+	date := time.Now()
+
+	templatePath := filepath.Join("templates", "date.html")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, date)
+
+}
+
+func dateSiteHandler(w http.ResponseWriter, r *http.Request) {
+	templatePath := filepath.Join("templates", "date-site.yaml")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	err = tmpl.Execute(w, nil)
+}
+
 func corsExampleHandler(w http.ResponseWriter, r *http.Request) {
 	// disable CORS
 	w.Header().Add("Access-Control-Allow-Origin", "*")
@@ -466,6 +488,34 @@ func corsExampleHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	tmpl.Execute(w, nil)
 
+}
+
+// jsonHandler just returns some json for SOP tests
+func jsonHandler(w http.ResponseWriter, r *http.Request) {
+	// if r.Method != http.MethodGet {
+	// 	http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	// 	return
+	// }
+	// 1. Define the data
+	data := struct {
+		Age  int    `json:"age"`
+		Name string `json:"name"`
+	}{
+		Age:  33,
+		Name: "Jane Doe",
+	}
+
+	// 2. Set the Content-Type header BEFORE writing status or body
+	w.Header().Set("Content-Type", "application/json")
+
+	// 3. Set the status code
+	w.WriteHeader(http.StatusOK)
+
+	// 4. Encode directly to the response writer (Best Practice for efficiency)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+		return
+	}
 }
 
 func main() {
@@ -524,6 +574,11 @@ func main() {
 
 	mux.HandleFunc("/cors", corsExampleHandler)
 	mux.HandleFunc("/ajax", ajaxExampleHandler)
+
+	mux.HandleFunc("/date", dateHandler)
+	mux.HandleFunc("/datesite", dateSiteHandler)
+
+	mux.HandleFunc("/json", jsonHandler)
 
 	loggingMux := loggingDecorator(mux)
 
