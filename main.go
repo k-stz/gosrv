@@ -453,7 +453,15 @@ func ajaxExampleHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
 	}
 	tmpl.Execute(w, nil)
+}
 
+func sopExampleHandler(w http.ResponseWriter, r *http.Request) {
+	templatePath := filepath.Join("templates", "sop-example.html")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, nil)
 }
 
 func dateHandler(w http.ResponseWriter, r *http.Request) {
@@ -579,6 +587,7 @@ func main() {
 	mux.HandleFunc("/datesite", dateSiteHandler)
 
 	mux.HandleFunc("/json", jsonHandler)
+	mux.HandleFunc("/sop", sopExampleHandler)
 
 	loggingMux := loggingDecorator(mux)
 

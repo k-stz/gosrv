@@ -1,0 +1,65 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+  <meta charset="UTF-8">
+  <title>SOP Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="jojo"></script>
+  <script>
+    x = new XMLHttpRequest();
+    // make GET request to endpoint replacing DOM elemet with 'id' with response payload
+    myReplacer = (endpoint, id) => { 
+        console.log("myReplacer called!");
+        x.open("GET", endpoint);
+        x.send();
+        // here we basically do what htmx does with: 
+        // hx-get="/echo", hx-trigger=load, hx-target="#mydiv" does
+        x.onload = function() {
+            console.log("xmlhttprequest finished, response text is:", x.responseText);
+            responseText = x.responseText
+            document.getElementById(id).innerHTML = responseText
+        }
+    }
+    // finally trigger the a.send() on click
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+   <p>Add button that will on click run a XHR function</p>
+   <button hx-get="/json" hx-trigger="click" hx-target="#display1">
+     Run htmx hx-get=/json
+   </button>
+   <div id="display1"> Display 1  </div>
+   <br>
+
+   <button onclick="myReplacer('/echo?q=ajax-powered-by-XMLHttpRequest!', 'display2')">
+      Run XHR myReplacer('display2')
+    </button>
+
+
+    <div id="display2">
+      Display 2
+    </div>
+
+<h1>SOP legal crossings</h1>
+<p>SOP prevents loading content from another website. But that's not true you might think, we see websites load external content all the time. For example an image:  </p>
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/500px-Tux.svg.png" style="width: 100px">
+
+<p>That's because SOP aims to prevent scripts from access cross origin </p>
+<p>Run this site both on two ports, this already counts as a differnt origin. And now try to press these buttons.</p>
+<p>The first button will try to issue a http request to /json returning simple json response. While the second button calls the same endpoint but on another orign localhost:5050/json, violating the SOP. </p>
+
+   <button onclick="myReplacer('/json' , 'display3')">
+     Run XHR myReplacer('/json', 'display3')
+   </button>
+   <br><b>Result:</b><br><div id="display3">
+     Display 3
+   </div>
+   <br>
+   <button onclick="myReplacer('localhost:5050/json' , 'display4')">
+     Run XHR myReplacer('localhost:5050/json', 'display4')
+   </button>
+   <br><b>Result:</b><br><div id="display4">
+     Display 4
+   </div>
+</body>
+</html>
