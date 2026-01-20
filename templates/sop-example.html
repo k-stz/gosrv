@@ -20,6 +20,38 @@
         }
     }
     // finally trigger the a.send() on click
+    /**
+    * Replaces the content of an element with HTML from an endpoint.
+    * @param {string} endpoint - The URL to fetch HTML from.
+    * @param {string} id - The ID of the target element.
+    */
+    const myFetchReplacer = async (endpoint, id) => {
+        console.log("myFetchReplacer called! With endpoint\=" + endpoint + " id\="+id);
+        try {
+            // await blocks till headers are received - not body, that's what response.text() does!
+            const response = await fetch(endpoint);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // awaits till body is received!
+            const html = await response.text();
+
+            const target = document.getElementById(id);
+            if (target) {
+                // I don't understand at all how sanitization is done in this line
+                target.innerHTML = html;
+            } else {
+                console.error(`Element with id "${id}" not found.`);
+            }
+         } catch (error) {
+            console.log("myFetchReplacer failed with:", error)
+         }
+    }
+
+
+
   </script>
 
   <link rel="stylesheet" href="styles.css">
@@ -34,11 +66,17 @@
    <button onclick="myReplacer('/echo?q=ajax-powered-by-XMLHttpRequest!', 'display2')">
       Run XHR myReplacer('display2')
     </button>
-
-
     <div id="display2">
       Display 2
     </div>
+
+    <button onclick="myFetchReplacer('/echo?q=ajax-powered-by-XMLHttpRequest!', 'display2-fetch')">
+      Run Fetch API implementation  myFetchReplacer('/echo?q=ajax-powered-by-XMLHttpRequest!', 'display2-fetch')
+    </button>
+    <div id="display2-fetch">
+      Display 2 Fetch API example
+    </div>
+
 
 <h1>SOP legal crossings</h1>
 <p>SOP prevents loading content from another website. But that's not true you might think, we see websites load external content all the time. For example an image:  </p>
@@ -48,6 +86,7 @@
 <p>Run this site both on two ports, this already counts as a differnt origin. And now try to press these buttons.</p>
 <p>The first button will try to issue a http request to /json returning simple json response. While the second button calls the same endpoint but on another orign localhost:5050/json, violating the SOP. </p>
 
+<p>One of trigger a violation of SOP, <b>check out the browser devtool debug console!</b></p>
    <button onclick="myReplacer('/json' , 'display3')">
      Run XHR myReplacer('/json', 'display3')
    </button>
