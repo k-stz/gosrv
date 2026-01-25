@@ -513,6 +513,13 @@ func jsonHandler(w http.ResponseWriter, r *http.Request) {
 		Name: "Jane Doe",
 	}
 
+	_, ok := r.URL.Query()["cors"]
+	if ok {
+		// Cores header set!
+		w.Header().Set("Access-Control-Allow-Origin", "*") // allow all!
+		fmt.Println("/json CORS flag set -> setting CORS header for responses!")
+	}
+
 	// 2. Set the Content-Type header BEFORE writing status or body
 	w.Header().Set("Content-Type", "application/json")
 
@@ -597,9 +604,10 @@ func main() {
 	// Listen port
 	port, ok := os.LookupEnv("PORT")
 	if !ok {
-		port = ":5000"
+		port = "5000"
 	}
-	fmt.Println("Listening on :", port)
+	port = ":" + port
+	fmt.Println("Listening on", port)
 	err := http.ListenAndServe(port, loggingMux)
 	if err != nil {
 		panic(err)
