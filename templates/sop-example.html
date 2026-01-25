@@ -49,8 +49,48 @@
             console.log("myFetchReplacer failed with:", error)
          }
     }
+  </script>
+  <!-- extract headers -->
+  <script>
+  async function fetchExample() {
+  const url = 'http://localhost:5000/httpbin';
 
+  try {
+    // 1. Make the fetch request
+    const response = await fetch(url);
 
+    // 2. Check if the request was successful (status 200-299)
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    // 3. Extract Headers
+    console.log('--- Response Headers ---');
+    // Headers object allows iteration and getting specific headers
+    for (let [key, value] of response.headers) {
+      console.log(`${key}: ${value}`);
+    }
+    console.log('Content-Type:', response.headers.get('Content-Type')); // Get specific header
+
+  const data = await response.text();
+  console.log('--- Response Body ---');
+  console.log(data);
+
+  cookie = response.headers.getSetCookie('Cookie')
+
+  if (cookie.length > 0) {
+    console.log("GOT COOOKIE!!!! Cookie=", cookie)
+  } else {
+    console.log("No cookie found (cookie.length < 0). Cookie:", cookie)
+
+  }
+
+  } catch (error) {
+    console.error('Fetch Error:', error);
+  }
+}
+
+fetchExample();
 
   </script>
 
@@ -70,7 +110,7 @@
       Display 2
     </div>
 
-    <button onclick="myFetchReplacer('/echo?q=ajax-powered-by-XMLHttpRequest!', 'display2-fetch')">
+    <button onclick="myFetchReplacer('/echo?q=ajax-powered-by-Fetch-API!!', 'display2-fetch')">
       Run Fetch API implementation  myFetchReplacer('/echo?q=ajax-powered-by-XMLHttpRequest!', 'display2-fetch')
     </button>
     <div id="display2-fetch">
@@ -82,7 +122,7 @@
 <p>SOP prevents loading content from another website. But that's not true you might think, we see websites load external content all the time. For example an image:  </p>
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/500px-Tux.svg.png" style="width: 100px">
 
-<p>That's because SOP aims to prevent scripts from access cross origin </p>
+<p>That is because SOP aims to prevent scripts from access cross origin </p>
 <p>Run this site both on two ports, this already counts as a differnt origin. And now try to press these buttons.</p>
 <p>The first button will try to issue a http request to /json returning simple json response. While the second button calls the same endpoint but on another orign localhost:5050/json, violating the SOP. </p>
 
@@ -94,11 +134,30 @@
      Display 3
    </div>
    <br>
-   <button onclick="myReplacer('localhost:5050/json' , 'display4')">
-     Run XHR myReplacer('localhost:5050/json', 'display4')
+   <button onclick="myReplacer('http://localhost:5050/json' , 'display4')">
+     Run XHR myReplacer('http://localhost:5050/json', 'display4')
    </button>
    <br><b>Result:</b><br><div id="display4">
      Display 4
    </div>
+
+
+<h1>CORS examples</h1>
+<p>CORS (Cross-origin resource sharing), is a mechanism to relax the CORS policy. A website response with CORS specific headers (Access-Control-Allow-Origin: *) to indicate that it allows fetching code from a different origin.</p>
+
+   <p> using /json?cors=true, will set the CORS response header. This effectivly allows clients loading code from that webserver. Thus yielding a Reposne for replacement:</p>
+   <button onclick="myReplacer('http://localhost:5050/json?cors=true' , 'display5')">
+     Run XHR myReplacer('http://localhost:5050/json?cors=true', 'display5')
+   </button>
+   <br><b>Result:</b><br><div id="display5">
+     Display 5
+   </div>
+
+
+<br>
+<button onclick="fetchExample()"> Fetch Example log headers+body
+</button>
+<p>When you inspect the http-request with wireshark that the fetchExample call will do, you can see that it contains the "Cookie: some-cookie" header! But there is no way in JavaScript to extract that header from the client-side, this is expressly removed.  </p>
+<p>Check devtools console for the output</p>
 </body>
 </html>
