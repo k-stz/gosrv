@@ -159,5 +159,46 @@ fetchExample();
 </button>
 <p>When you inspect the http-request with wireshark that the fetchExample call will do, you can see that it contains the "Cookie: some-cookie" header! But there is no way in JavaScript to extract that header from the client-side, this is expressly removed.  </p>
 <p>Check devtools console for the output</p>
+
+<br>
+<h1>REST API example</h1>
+<p>What about calling a server providing a rest api? Following the logic of SOP, that is a different Origin, and thus to use it in the client-side javascript we would have to get a CORS header to do a fetch operation:</p>
+<p>TODO improve this example, this endpoint is to the kubernetes-api returning a simple json localhost:8001/api Better allow to make the request to an input field, so we can just enter endpoint dynamically int there</p>
+
+   <p> using /json?cors=true, will set the CORS response header. This effectivly allows clients loading code from that webserver. Thus yielding a Reposne for replacement:</p>
+<p>
+  using /json?cors=true, will set the CORS response header. This effectively allows clients loading code from that webserver.
+</p>
+
+<p>Kubenetes API CORS headers will show up when you make a request to it in the browser, in this case we got: Access-Control-Allow-Origin	http://localhost:5000 </p>
+<p>Interesting: When you make a curl request to the endpoint it will NOT return the CORS header, as per the spec the kbuernetes-API only does that when you pass an Origin header along with it. So only this request will show the CORS headers:</p>
+Hint to show CORS header with curl pass Origin header: <code>curl http://localhost:8001/api -v -H "Origin: http://localhost:5050"</code>
+<br>
+<label>
+  Endpoint:
+  <input
+    type="text"
+    id="endpointInput"
+    value="http://localhost:5050/json?cors=true "
+    style="width: 420px;"
+  />
+</label>
+
+<br><br>
+
+<button
+  onclick="myReplacer(document.getElementById('endpointInput').value, 'display6')"
+>
+  Run XHR
+</button>
+
+<br><b>Result:</b><br>
+
+<div id="display6">
+  Display 6
+</div>
+
+
+
 </body>
 </html>
