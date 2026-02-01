@@ -170,7 +170,7 @@ fetchExample();
   using /json?cors=true, will set the CORS response header. This effectively allows clients loading code from that webserver.
 </p>
 
-<p>Kubenetes API CORS headers will show up when you make a request to it in the browser, in this case we got: Access-Control-Allow-Origin	http://localhost:5000 </p>
+<p>Kubenetes API CORS headers will show up when you make a request to it in the browser, in this case we got: <b>Access-Control-Allow-Origin	http://localhost:5000 </b> </p>
 <p>Interesting: When you make a curl request to the endpoint it will NOT return the CORS header, as per the spec the kbuernetes-API only does that when you pass an Origin header along with it. So only this request will show the CORS headers:</p>
 Hint to show CORS header with curl pass Origin header: <code>curl http://localhost:8001/api -v -H "Origin: http://localhost:5050"</code>
 <br>

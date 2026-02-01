@@ -464,6 +464,15 @@ func sopExampleHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+func csrfExampleHandler(w http.ResponseWriter, r *http.Request) {
+	templatePath := filepath.Join("templates", "csrf-example.html")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, nil)
+}
+
 func dateHandler(w http.ResponseWriter, r *http.Request) {
 	date := time.Now()
 
@@ -595,6 +604,7 @@ func main() {
 
 	mux.HandleFunc("/json", jsonHandler)
 	mux.HandleFunc("/sop", sopExampleHandler)
+	mux.HandleFunc("/csrf", csrfExampleHandler)
 
 	loggingMux := loggingDecorator(mux)
 
