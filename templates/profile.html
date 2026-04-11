@@ -2,19 +2,132 @@
 <html class="no-js" lang="">
 <head>
   <meta charset="UTF-8">
-  <title>SOP Demo</title>
+
+  <title>User Profile</title>
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="jojo"></script>
   <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .username {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .field {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .verified {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .verified.true {
+            background: #e6f9f0;
+            color: #1a7f4b;
+        }
+
+        .verified.false {
+            background: #fdecea;
+            color: #b42318;
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .logout {
+            text-decoration: none;
+            color: white;
+            background: #333;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .logout:hover {
+            background: #000;
+        }
+    </style>
 </head>
 <body>
-<h1>Profile</h1>
-   <p>You are ... TODO extract information from OIDC token here</p>
-   <br>
 
+<div class="container">
+    <div class="card">
 
-<br><br>
-<p>
-  Add profile fields here, allow to save and see if we can interact back with keycloak or if we just use keyclaok for auth and identity infromation in a read-only fashion
-</p>
+        <div class="header">
+            <h1>{{.FirstName}} {{.LastName}}</h1>
+            <div class="username">@{{.Name}}</div>
+        </div>
+
+        <div class="field">
+            <div class="label">Email</div>
+            <div class="value">{{.Email}}</div>
+        </div>
+
+        <div class="field">
+            <div class="label">Email Verified</div>
+            <div class="value">
+                <span class="verified {{.Verified}}">
+                    {{if .Verified}}Verified{{else}}Not Verified{{end}}
+                </span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <a class="logout" href="/logout">Logout</a>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

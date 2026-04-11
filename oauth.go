@@ -5,9 +5,13 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
+	"path/filepath"
+
+	"encoding/gob"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gorilla/sessions"
@@ -35,6 +39,20 @@ var (
 	// Cookie-based session store
 	store = sessions.NewCookieStore([]byte("dev-secret-CHANGE-ME"))
 )
+
+type UserProfile struct {
+	Name      string `json:"preferred_username"`
+	Email     string `json:"email"`
+	FirstName string `json:"given_name"`
+	LastName  string `json:"family_name"`
+	Verified  bool   `json:"email_verified"`
+}
+
+func init() {
+	// this is necessary or else you can NOT store UserProfile structs in gorilla sessions!
+	// The Sesison won't be restoreable!
+	gob.Register(UserProfile{})
+}
 
 func randomState() string {
 	b := make([]byte, 32)
@@ -104,31 +122,26 @@ func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 
 	// Extract custom claims
 	// THese are the information about WHO logged in
-	var claims struct {
-		Email      string `json:"email"`
-		Verified   bool   `json:"email_verified"`
-		Username   string `json:"preferred_username"`
-		FamilyName string `json:"family_name"`
-		GivenName  string `json:"given_name"`
-	}
+	claims := UserProfile{}
 	if err := idToken.Claims(&claims); err != nil {
 		// handle error
 		fmt.Println("handleOAuth2Callback: TODO handling idtoken.Claims error. Err:", err)
 	}
 
 	// The user is logged in at this point, we save the session state:
-	session.Values["user"] = claims.Username
+	session.Values["user"] = claims.Name
 	session.Values["id_token"] = rawIDToken
 	session.Values["email"] = claims.Email
+	session.Values["userProfile"] = claims
 
-	session.Save(r, w)
+	fmt.Println("session written:", session.Values["userProfile"]) // works!
+	fmt.Println("session user:", session.Values["user"])           // works!
+	fmt.Println("## callback session id=", session.ID)             // stays empty, this is correct as we use Cookies instead
 
 	fmt.Println("handleOAuth2Callback: Maybe reached end of oauthflow successfully. Claims:", claims)
-	io.WriteString(w, fmt.Sprintf("%v <br>", claims))
-	io.WriteString(w, fmt.Sprintf("User  logged in successfully: %v !<br>", claims.Username))
-
-	// this sholud return the full raw JWT (Oauth OIDC ID TOKEN)
-	io.WriteString(w, fmt.Sprintf("rawIDToken: %v", rawIDToken))
+	fmt.Println("handleOAuth2Callback: store options Secure:", store.Options.Secure)
+	session.Save(r, w)
+	http.Redirect(w, r, "/", http.StatusFound)
 
 }
 
@@ -139,6 +152,30 @@ func setMyCookie(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Set-Cookie", cookie)
 
 	io.WriteString(w, fmt.Sprintf("attempted to set cookie in your browser setting the following header on this Response:<br> Set-Cookie: %v", cookie))
+}
+
+// Protected endpoints (require user login)
+
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "auth")
+
+	userProfile, ok := session.Values["userProfile"]
+	fmt.Println("profileHandler: session restored:", session.Values["userProfile"])
+	// testing serilization issues
+	fmt.Println("profileHandler: session user:", session.Values["user"])
+	fmt.Println("profileHandler: session ID:", session.ID)
+
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	// At this poind we have a User token => We have an session with an authenticated user!
+	templatePath := filepath.Join("templates", "profile.html")
+	tmpl, err := template.ParseFiles(templatePath)
+	if err != nil {
+		http.Error(w, "template error: "+err.Error(), http.StatusInternalServerError)
+	}
+	tmpl.Execute(w, userProfile)
 }
 
 func SetupOauth(mux *http.ServeMux) {
@@ -161,6 +198,8 @@ func SetupOauth(mux *http.ServeMux) {
 
 	mux.HandleFunc("/login", loginHandler)
 	mux.HandleFunc("/callback", handleOAuth2Callback)
+
+	mux.HandleFunc("/profile", profileHandler)
 
 	mux.HandleFunc("/setcookie", setMyCookie)
 
