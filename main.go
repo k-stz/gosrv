@@ -620,7 +620,7 @@ func main() {
 	loggingMux := loggingDecorator(mux)
 
 	// oauth
-	//SetupOauth(mux)
+	SetupOauth(mux)
 
 	// Listen port
 	port, ok := os.LookupEnv("PORT")

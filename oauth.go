@@ -18,10 +18,14 @@ var (
 	ctx = context.Background()
 
 	// keycloak server
-	keycloakIssuer = "http://localhost:8080/realms/myrealm"
-	clientID       = "gosrv"
+	//keycloakIssuer = "http://localhost:8080/realms/myrealm"
+	keycloakIssuer = "https://my-keycloak.apps.testcluster.lab.local/realms/master"
+
+	clientID = "gosrv"
 	// where?
-	clientSecret = "CLIENT_SECRET"
+	// Got this secret form the keycloak UI after setting up the client!
+	// TODO set via Config abstraction
+	clientSecret = "2O0SHFSkfrWqZKVo6jklYzl8frwaJzXZ"
 	redirectURL  = "http://localhost:5000/callback"
 
 	// globals
@@ -72,6 +76,8 @@ func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Verify state and errors.
+	// Apparently here _CLIENT AUTHENTICATION_ happens. So the gosrv backend is
+	// getting authorizied, not any user.
 	oauth2Token, err := oauth2Config.Exchange(ctx, r.URL.Query().Get("code"))
 	if err != nil {
 		fmt.Println("FATAL: handleOAuth2Callback: oauth2configexchange failed. Err:", err)
@@ -94,19 +100,33 @@ func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
 		return // fatal error so we must return
 	}
 
+	// I think at this point, only the client is authenticated
+
 	// Extract custom claims
 	// THese are the information about WHO logged in
 	var claims struct {
-		Email    string `json:"email"`
-		Verified bool   `json:"email_verified"`
+		Email      string `json:"email"`
+		Verified   bool   `json:"email_verified"`
+		Username   string `json:"preferred_username"`
+		FamilyName string `json:"family_name"`
+		GivenName  string `json:"given_name"`
 	}
 	if err := idToken.Claims(&claims); err != nil {
 		// handle error
 		fmt.Println("handleOAuth2Callback: TODO handling idtoken.Claims error. Err:", err)
 	}
 
+	// The user is logged in at this point, we save the session state:
+	session.Values["user"] = claims.Username
+	session.Values["id_token"] = rawIDToken
+	session.Values["email"] = claims.Email
+
+	session.Save(r, w)
+
 	fmt.Println("handleOAuth2Callback: Maybe reached end of oauthflow successfully. Claims:", claims)
 	io.WriteString(w, fmt.Sprintf("%v <br>", claims))
+	io.WriteString(w, fmt.Sprintf("User  logged in successfully: %v !<br>", claims.Username))
+
 	// this sholud return the full raw JWT (Oauth OIDC ID TOKEN)
 	io.WriteString(w, fmt.Sprintf("rawIDToken: %v", rawIDToken))
 
